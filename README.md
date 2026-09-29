@@ -28,7 +28,8 @@ LEO satellite networks present unique routing challenges due to high mobility, f
 ├── data2.xlsx                   # Time slice 2 — 975 directed ISLs
 ├── data3.xlsx                   # Time slice 3 — 965 directed ISLs
 ├── convergence_speed.png        # QLRA vs SQLRA convergence plot
-├── performance_same_pair.png    # 4-metric comparison (5–20 users)
+├── performance_same_pair.png    # 4-metric comparison (5–20 users, same pair)
+├── throughput_comparison.png    # Avg throughput vs users (3 time slices)
 ├── RL/
 │   ├── env.py                   # Satellite network MDP environment
 │   ├── rl.py                    # Core DQN agent (reference)
@@ -82,18 +83,23 @@ AHP weights (from paper):
 |-----------|------|-----------|------------|-------------|---------|
 | Dijkstra  | 4    | 50.03     | 14.09      | 2.75        | 2.57    |
 | QLRA      | 29   | 64.44     | 321.74     | 4.98        | 1.15    |
-| **SQLRA** | 32   | **74.49** | 222.91     | **4.01**    | **1.74** |
+| SQLRA     | 32   | **74.49** | 222.91     | 4.01        | 1.74    |
 
 **Key findings:**
 - SQLRA achieves **49% higher bandwidth** than Dijkstra (74.49 vs 50.03 Mbps)
-- SQLRA has **lower BER than QLRA** — better link quality selection
+- SQLRA has lower BER than QLRA — better link quality selection among the RL methods
 - SQLRA converges in **30 episodes vs QLRA's 60** (2× faster — Paper Figure 8)
-- Dijkstra has lowest delay (4 hops only) but ignores BW/BER/Visible Time
+- Trade-off: the RL routes use many more hops (29–32 vs 4), so Dijkstra keeps lower delay and BER and higher visible time in this setup, while SQLRA maximizes bandwidth.
 
 ### Convergence Speed
 ![Convergence Speed](convergence_speed.png)
 
-### Multi-User Throughput (5–20 users, same source-destination pair)
+### Average Throughput vs Number of Users (3 time slices)
+![Average Throughput vs Number of Users](throughput_comparison.png)
+
+SQLRA achieves the highest average throughput across all three time slices.
+
+### Same source-destination pair (5–20 users)
 
 | Users | Dijkstra (Mbps) | QLRA (Mbps) | SQLRA (Mbps) |
 |-------|----------------|-------------|--------------|
@@ -102,9 +108,9 @@ AHP weights (from paper):
 | 15    | 45.63          | 60.83       | 61.19        |
 | 20    | 42.58          | 59.51       | 59.76        |
 
-SQLRA consistently outperforms across all user loads.
+![Same-pair performance comparison](performance_same_pair.png)
 
-![Performance Comparison](performance_same_pair.png)
+SQLRA leads on throughput at every load, with the gap narrowing as users increase.
 
 ---
 
@@ -115,7 +121,7 @@ SQLRA consistently outperforms across all user loads.
 3. **Compute** per-link reward using AHP-weighted formula
 4. **Train** QLRA (ε-greedy, 60 ep) and SQLRA (BFS back-to-front, 30 ep)
 5. **Extract** optimal path greedily from converged Q-table
-6. **Evaluate** against Dijkstra across 5–20 concurrent users
+6. **Evaluate** against Dijkstra across 1–20 concurrent users
 
 ---
 
